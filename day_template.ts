@@ -4,7 +4,6 @@ function parse(lines: string[]): string[] {
     return lines;
 }
 
-
 function puzzle(lines: string[], part: Part, type: Type, logger: Logger): void {
     const data = parse(lines);
     if (part === Part.PART_1) {
