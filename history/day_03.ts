@@ -54,7 +54,7 @@ function puzzle(lines: string[], part: Part, type: Type, logger: Logger): void {
     }
     else {
         const result = data.map(list => processV2(list, 12)).reduce((a, b) => a + b);
-        logger.result(result, [3121910778619, undefined])
+        logger.result(result, [3121910778619, 171989894144198])
     }
 }
 
