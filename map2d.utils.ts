@@ -10,8 +10,8 @@ export namespace World2D {
     export type Vec = { x: number, y: number }
     export type Size = { width: number, height: number }
     //export enum TurnType {OPPOSITE = 'O',STRAIT = 'S',CLOCKWISE = 'C',COUNTERCLOCK_WISE = 'M'}
-    export enum TurnType { OPPOSITE = 0,STRAIT = 1,CLOCKWISE = 2,COUNTERCLOCK_WISE = 3}
-
+    export enum TurnType { OPPOSITE = 0, STRAIT = 1, CLOCKWISE = 2, COUNTERCLOCK_WISE = 3 }
+    export type MoveOptions = { withDiags?: boolean, cyclic?: boolean };
 
     /**
      * Calcule le type de rotation à faire pour passer de la direction 1 à la direction 2
@@ -202,11 +202,17 @@ export namespace World2D {
             this._size = { height: input.length, width: input[0].length };
         }
 
-        public move_pos(pos: Readonly<Pos> | undefined, dir: Dir): Pos | undefined {
+        public move_pos(pos: Readonly<Pos> | undefined, dir: Dir, cyclic?: boolean): Pos | undefined {
             if (pos === undefined) {
                 return undefined;
             }
             const new_pos = move_pos(pos, dir);
+            if (cyclic === true) {
+                if (new_pos.x < 0) { new_pos.x += this._size.width }
+                if (new_pos.x >= this._size.width) { new_pos.x -= this._size.width }
+                if (new_pos.y < 0) { new_pos.y += this._size.height }
+                if (new_pos.y >= this._size.height) { new_pos.y -= this._size.height }
+            }
             if (new_pos.x < 0 || new_pos.x >= this._size.width || new_pos.y < 0 || new_pos.y >= this._size.height) {
                 return undefined;
             }
@@ -229,36 +235,36 @@ export namespace World2D {
             all_y.forEach(y => all_x.forEach(x => fct({ x, y })))
         }
 
-        public * move_all_direction(pos: Readonly<Pos>, withDiags?: boolean): Generator<Pos> {
-            const dirs = withDiags ? ALL_DIRECTIONS_WITH_DIAGS : ALL_DIRECTIONS_WITHOUT_DIAGS;
+        public * move_all_direction(pos: Readonly<Pos>, opts: MoveOptions): Generator<Pos> {
+            const dirs = opts.withDiags ? ALL_DIRECTIONS_WITH_DIAGS : ALL_DIRECTIONS_WITHOUT_DIAGS;
             for (const dir of dirs) {
-                const next_pos = this.move_pos_many(pos, dir);
+                const next_pos = this.move_pos_many(pos, dir, opts.cyclic);
                 if (next_pos) {
                     yield next_pos;
                 }
             }
         }
 
-        public * move_all_direction_with_cell(pos: Readonly<Pos>, withDiags?: boolean): Generator<PosAndCell<T>> {
-            for (const nextPos of this.move_all_direction(pos, withDiags)) {
+        public * move_all_direction_with_cell(pos: Readonly<Pos>, opts: MoveOptions): Generator<PosAndCell<T>> {
+            for (const nextPos of this.move_all_direction(pos, opts)) {
                 yield { pos: nextPos, cell: this.cell(nextPos) };
             }
         }
 
-        public move_pos_with_cell(pos: Readonly<Pos>, dir: Dir): PosAndCell<T> | undefined {
-            const nextPos = this.move_pos(pos, dir);
+        public move_pos_with_cell(pos: Readonly<Pos>, dir: Dir, cyclic?: boolean): PosAndCell<T> | undefined {
+            const nextPos = this.move_pos(pos, dir, cyclic);
             if (nextPos === undefined) {
                 return undefined;
             }
             return { pos: nextPos, cell: this.cell(nextPos) };
         }
 
-        public move_pos_many(pos: Readonly<Pos> | undefined, directions: DirComposite): Pos | undefined {
-            return directions.reduce((curr_pos, dir) => this.move_pos(curr_pos, dir), pos);
+        public move_pos_many(pos: Readonly<Pos> | undefined, directions: DirComposite, cyclic?: boolean): Pos | undefined {
+            return directions.reduce((curr_pos, dir) => this.move_pos(curr_pos, dir, cyclic), pos);
         }
 
-        public move_pos_many_with_cell(pos: Readonly<Pos> | undefined, directions: DirComposite): PosAndCell<T> | undefined {
-            const nextPos = directions.reduce((curr_pos, dir) => this.move_pos(curr_pos, dir), pos);
+        public move_pos_many_with_cell(pos: Readonly<Pos> | undefined, directions: DirComposite, cyclic?: boolean): PosAndCell<T> | undefined {
+            const nextPos = directions.reduce((curr_pos, dir) => this.move_pos(curr_pos, dir, cyclic), pos);
             if (nextPos === undefined) {
                 return undefined;
             }
