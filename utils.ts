@@ -110,9 +110,35 @@ declare global {
          * Utilise l'objet fourni tant qu'outil de mapping des valeurs du tableau
          */
         filterTyped<U extends T>(fct: ((i: T) => boolean)): U[];
-    }
 
+        /**
+         * Binary find of an item
+         * @argument match: 0 match, >0 above, <0 below
+         */
+        findBinary(match: (i: T) => number): T | undefined;
+    }
 }
+
+Array.prototype.findBinary = function <T>(match: (i: T) => number): T | undefined {
+    let min = 0;
+    let max = this.length;
+    while (min < max) {
+        const middle = Math.floor((max + min) / 2);
+        const current = this[middle];
+        const res = match(current);
+        if (res === 0) {
+            return current;
+        } else if (res < 0) {
+            if (max === middle) { break; }
+            max = middle;
+        } else if (res > 0) {
+            if (min === middle) { break; }
+            min = middle;
+        }
+    }
+    return undefined;
+}
+
 
 Array.prototype.filterTyped = function <T, U extends T>(fct: ((i: T) => i is U)): U[] {
     return this.filter(fct);
@@ -291,10 +317,10 @@ export class PerfTimer {
         return new PerfTimer()
     }
 
-    public static run<T>(fct:()=>T):[number,T]{
+    public static run<T>(fct: () => T): [number, T] {
         const timer = new PerfTimer();
         const result = fct();
-        return [timer.time(),result];
+        return [timer.time(), result];
     }
 
     public time(): number {
