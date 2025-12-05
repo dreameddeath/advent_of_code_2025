@@ -1,4 +1,4 @@
-import { Logger, Part, run, Type } from "./day_utils"
+import { Logger, Part, run, Type } from "../day_utils"
 
 type Range = [bigint, bigint];
 interface Input {
