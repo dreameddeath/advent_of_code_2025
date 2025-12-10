@@ -1,6 +1,6 @@
-import { Logger, Part, run, Type } from "./day_utils"
-import { World2D } from "./map2d.utils";
-import { generator } from "./utils";
+import { Logger, Part, run, Type } from "../day_utils"
+import { World2D } from "../map2d.utils";
+import { generator } from "../utils";
 type Content = "." | "#" | "X" | "F" | "O"/*out*/;
 
 type Cell = {
@@ -119,9 +119,23 @@ function printWorld(world: World2D.Map2d<Cell>, logger: Logger) {
     }
 }
 
+function fillOuter(toFill: World2D.Pos[], world: World2D.Map2d<Cell>) {
+    while (toFill.length > 0) {
+        const pos = toFill.pop()!;
+        const cell = world.cell_opt(pos);
+        if (cell === undefined) {
+            continue;
+        }
+        if (cell.content ===".") {
+            cell.content = "O";
+            World2D.ALL_DIRECTIONS.forEach(next => toFill.push(World2D.move_pos(pos, next)));
+        }
+    }
+}
+
 function puzzle(lines: string[], part: Part, type: Type, logger: Logger): void {
     const data = parse(lines);
-    fillContent([{ x: 0, y: 0 }], data.world, "O");
+    fillOuter([{ x: 0, y: 0 }], data.world);
     printWorld(data.world, logger);
 
     const rects: Rect[] = data.positions.flatMap((a, i, all) => all.slice(i + 1).map(b => buildRect(a, b, data.world))).reverseSortIntuitive(r => r.area);
@@ -159,16 +173,3 @@ function puzzle(lines: string[], part: Part, type: Type, logger: Logger): void {
  */
 run(9, [Type.TEST, Type.RUN], puzzle, [Part.ALL], { debug: false })
 
-function fillContent(toFill: World2D.Pos[], world: World2D.Map2d<Cell>, v: Content) {
-    while (toFill.length > 0) {
-        const pos = toFill.pop()!;
-        const cell = world.cell_opt(pos);
-        if (cell === undefined || cell.content === v) {
-            continue;
-        }
-        if (cell.content ===".") {
-            cell.content = v;
-            World2D.ALL_DIRECTIONS.forEach(next => toFill.push(World2D.move_pos(pos, next)));
-        }
-    }
-}
