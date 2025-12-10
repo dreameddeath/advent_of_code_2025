@@ -2,8 +2,8 @@ import { generator } from "./utils";
 
 
 export namespace World2D {
-    //export enum Dir { LEFT = "LEFT", RIGHT = "RIGHT", UP = "UP", DOWN = "DOWN" }
-    export enum Dir { LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3 }
+    export enum Dir { LEFT = "LEFT", RIGHT = "RIGHT", UP = "UP", DOWN = "DOWN" }
+    //export enum Dir { LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3 }
     export type DirComposite = Dir[];
 
     export type Pos = { x: number, y: number }
@@ -294,7 +294,7 @@ export namespace World2D {
             return old;
         }
 
-        public apply_cell(pos: Readonly<Pos>, fct: (c: T | undefined) => T): void {
+        public apply_cell(pos: Readonly<Pos>, fct: (c: T) => T): void {
             const line = this._cells[pos.y];
             if ((line === undefined) || pos.x < 0 || pos.x >= this._size.width) {
                 throw new Error(`Bad position (${pos.x}:${pos.y}) against (w:${this._size.width},h:${this._size.height})`)

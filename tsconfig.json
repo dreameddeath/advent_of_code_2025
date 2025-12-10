@@ -17,7 +17,7 @@
         ]
     },
     "include": [
-        "./**/*.ts",
+        "./**/*.ts", "day_09_extern.js",
     ],
     "exclude": [
         "node_modules",
