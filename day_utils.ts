@@ -1,6 +1,7 @@
 import { ParallelContext } from "./parallel_utils";
 import "./utils";
 import * as fs from 'fs';
+import { PerfTimer } from "./utils";
 
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -83,7 +84,6 @@ function calcSuccessMessage<T, U>(part: Part, type: Type, value: T | [T, U], exp
     }
     if (Array.isArray(expectedResult)) {
         if (part === Part.ALL) {
-            const effectiveValue = (value as [T, U]);
             if (expectedResult.length === 2) {
                 throw new Error("Inconsistent value result with part type");
             } else {
@@ -114,18 +114,18 @@ function calcSuccessMessage<T, U>(part: Part, type: Type, value: T | [T, U], exp
 export type Solver<BTAG> = (lines: string[], part: Part, type: Type, logger: Logger, benchTag?: BTAG) => void | Promise<void>;
 
 export async function doRun<BTAG>(fct: Solver<BTAG>, data: string[], part: Part, type: Type, logger: Logger, benchTag?: BTAG): Promise<number> {
-    const start = new Date();
+    const timer = PerfTimer.init();
     let res = fct(data, part, type, logger, benchTag);
     if (!(res instanceof Promise)) {
         res = Promise.resolve()
     }
     await res;
-    return (new Date()).getTime() - start.getTime();
+    return timer.time();
 }
 
 
 let _disableTests = false;
-const _globalStart = new Date();
+const _globalStart = PerfTimer.init();
 let _allrun = false;
 let _beforeRun: Promise<void>[] = [];
 
@@ -145,7 +145,7 @@ export async function endAll() {
 }
 
 function finalizeAll() {
-    const duration = new Date().getTime() - _globalStart.getTime();
+    const duration = _globalStart.time();
 
     console.log(`\n[Global] All run in ${duration} ms`);
     let totalFailures = 0;
@@ -164,7 +164,7 @@ function finalizeAll() {
 export async function internal_run<BTAG>(before: Promise<void>[], day: number, types: Type[], fct: Solver<BTAG>, parts: Part[] = [Part.ALL], opt?: { bench?: number, debug?: boolean, benchTags?: BTAG[] }): Promise<void> {
     await Promise.all(before);
     console.log(`[STARTING] Day ${day}`);
-    const start = new Date();
+    const timer = PerfTimer.init();
     for (const part of parts) {
         for (const type of types) {
             if (_disableTests && type === Type.TEST) {
@@ -192,7 +192,7 @@ export async function internal_run<BTAG>(before: Promise<void>[], day: number, t
         }
     };
 
-    console.log(`[DONE] Day ${day} done in ${(new Date()).getTime() - start.getTime()} ms`);
+    console.log(`[DONE] Day ${day} done in ${timer.time()} ms`);
 }
 
 

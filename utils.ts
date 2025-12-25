@@ -308,7 +308,7 @@ export function forceType<O>(input: any, fct: (i: any) => boolean): input is O {
 
 
 export class PerfTimer {
-    private readonly start = new Date();
+    private readonly start = performance.now();
     private constructor() {
 
     }
@@ -324,6 +324,6 @@ export class PerfTimer {
     }
 
     public time(): number {
-        return (new Date()).getTime() - this.start.getTime();
+        return Math.round((performance.now() - this.start)*1000)/1000;
     }
 }
